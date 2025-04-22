@@ -1,37 +1,56 @@
 package com.mohammad.certificatemanagementsystem.ontroller;
 
 import com.mohammad.certificatemanagementsystem.entity.User;
-import com.mohammad.certificatemanagementsystem.repository.UserRepository;
+import com.mohammad.certificatemanagementsystem.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
+
 
     @GetMapping
     public List<User> getAllUser(){
-        return userRepository.findAll();
+        return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userRepository.findById(id)
+        return userService.getUserById(id)
                 .map(user -> ResponseEntity.ok().body(user))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/adduser")
     public User createUser(@RequestBody User user){
-        return userRepository.save(user);
+        return userService.creatUser(user);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable Long id , @RequestBody User user){
+        try{
+            User updatedUser = userService.updateUser(id, user);
+            return ResponseEntity.ok(updatedUser);
+        }
+        catch (RuntimeException e){
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id){
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }
